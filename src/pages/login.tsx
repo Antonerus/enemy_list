@@ -19,33 +19,31 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    try {
-      const result = await signIn('credentials', {
-        username,
-        password,
-        callbackUrl: '/',
-      });
+    const result = await signIn('credentials', {
+      redirect: false,
+      username,
+      password,
+      callbackUrl: '/',
+    });
 
-      if (result?.error) {
-        if (result.error === "CredentialsSignin") {
-          setError("Invalid username or password");
-        }
-        else {
-          setError(result.error);
-        }
+    if (result?.error) {
+      if (result.error === "CredentialsSignin") {
+        setIsLoading(false);
+        setError("Invalid username or password");
       }
-    }
-    catch (err) {
-      setError("Unexpected Error");
-    }
-    finally {
+      else {
+        setIsLoading(false);
+        setError(result.error);
+      }
+    } else {
+      // Success case - manually redirect
       setIsLoading(false);
+      window.location.href = result?.url || "/"; // Full page reload to ensure state consistency
     }
   };
 
@@ -68,13 +66,6 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
-              {error && (
-                <Alert className="bg-red-500/10 border-red-500/20">
-                  <AlertCircle className="h-4 w-4 text-red-400" />
-                  <AlertDescription className="text-red-400">{error}</AlertDescription>
-                </Alert>
-              )}
-
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-gray-200">
                   Username
@@ -132,6 +123,12 @@ export default function LoginPage() {
                   "Access Database"
                 )}
               </Button>
+              {error && (
+                <Alert className="bg-red-500/10 border-red-500/20">
+                  <AlertCircle className="h-4 w-4 text-red-400" />
+                  <AlertDescription className="text-red-400">{error}</AlertDescription>
+                </Alert>
+              )}
             </form>
 
             <div className="mt-6 text-center">

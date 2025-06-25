@@ -47,13 +47,15 @@ export default function EnemiesList() {
 
   useEffect(() => {
     const savedMode = localStorage.getItem('darkMode');
-    if (savedMode) {
-      setDarkMode(savedMode === 'true');
-    }
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setDarkMode(
+      savedMode ? savedMode === 'true' : systemPrefersDark
+    );
   }, []);
 
   useEffect(() => {
     localStorage.setItem('darkMode', darkMode.toString());
+    document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
   useEffect(() => {
@@ -222,7 +224,12 @@ export default function EnemiesList() {
           <div className="flex gap-2">
             <Button
               variant='outline'
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={() => {
+                const newMode = !darkMode;
+                setDarkMode(newMode);
+                localStorage.setItem('darkMode', newMode.toString());
+                document.documentElement.classList.toggle('dark', newMode);
+              }}
               className="mt-1"
             > 
               {darkMode ? '☀️' : '🌙'}
